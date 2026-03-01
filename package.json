@@ -10,10 +10,17 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^5.7.5",
+    "@pinecone-database/pinecone": "^7.1.0",
+    "@sentry/nextjs": "^10.40.0",
     "@supabase/supabase-js": "^2.98.0",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.36.3",
     "next": "14.2.12",
+    "posthog-node": "^5.26.0",
     "react": "^18",
     "react-dom": "^18",
+    "resend": "^6.9.3",
+    "svix": "^1.86.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
