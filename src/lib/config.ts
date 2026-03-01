@@ -1,4 +1,4 @@
 export const appConfig = {
   name: "SmartNotes",
-  milestone: "032.4",
+  milestone: "032.9",
 };

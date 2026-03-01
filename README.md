@@ -1,15 +1,17 @@
 # SmartNotes
 
-SmartNotes for **PDCA-032 milestones 032.1–032.4**.
+SmartNotes for **PDCA-032 milestones 032.1–032.9**.
 
 ## Stack
 
 - Next.js 14 (App Router)
-- TypeScript
-- Tailwind CSS
-- ESLint
-- Clerk (Auth: Email + Google OAuth)
-- Supabase (Postgres + RLS + FTS)
+- TypeScript + ESLint + Tailwind
+- Clerk (Auth + Webhooks)
+- Supabase (Postgres + RLS)
+- Pinecone (semantic indexing/search)
+- Upstash Redis (API rate limiting)
+- Resend (welcome email)
+- Sentry + PostHog (telemetry)
 
 ## Setup
 
@@ -25,42 +27,42 @@ npm install
 cp .env.example .env.local
 ```
 
-Fill in Clerk + Supabase values in `.env.local`.
+3. Configure external services:
 
-3. Configure Clerk providers:
+- Clerk (Email + Google OAuth + webhook)
+- Supabase migrations + JWT template
+- Pinecone index
+- Upstash Redis database
+- Resend sender domain
+- Sentry + PostHog projects
 
-- Enable **Email** auth in Clerk Dashboard.
-- Enable **Google OAuth** in Clerk Dashboard (requires Google client id/secret).
+See `docs/setup-m032-5-9.md` for exact steps.
 
-4. Configure Supabase schema:
-
-- Apply migration in `supabase/migrations/20260301141500_pdca032_notes_schema.sql`
-- Follow `docs/supabase.md` for Clerk JWT + RLS wiring.
-
-5. Run locally:
+4. Run locally:
 
 ```bash
 npm run dev
 ```
 
-## Auth + routes
+## API summary
 
-- `/dashboard` is protected via Clerk middleware.
-- `/api/notes` and `/api/notes/:id` are protected via middleware + server auth checks.
-- Server-side user identity is available from Clerk (`auth()` / `currentUser()`).
+Authenticated routes:
 
-## Notes API
+- `GET /api/notes` list notes (pinned first)
+- `POST /api/notes` create note (+ optional premium `tags`, `pinned`)
+- `PATCH /api/notes/:id` update note (+ optional premium `tags`, `pinned`)
+- `DELETE /api/notes/:id` delete note
+- `POST /api/notes/search` semantic search via Pinecone, maps back to Supabase notes
+- `GET /api/tags` premium-only tag list
 
-Authenticated endpoints:
+Webhook route:
 
-- `GET /api/notes` — list current user notes
-- `POST /api/notes` — create note
-- `PATCH /api/notes/:id` — update note
-- `DELETE /api/notes/:id` — delete note
+- `POST /api/webhooks/clerk` handles `user.created` and sends welcome email via Resend
 
-Free-plan enforcement:
+Cross-cutting:
 
-- Maximum **50 notes** on free plan (server-side check)
+- `/api/*` sliding-window rate limit: **10 req/min** (429 `{ "error": "Rate limit exceeded" }`)
+- Event tracking: `note_created`, `note_deleted`, `search_performed`
 
 ## Milestone status
 
@@ -68,3 +70,8 @@ Free-plan enforcement:
 - [x] 032.2 Clerk auth wiring + protected dashboard + server userId access
 - [x] 032.3 Supabase schema + RLS + FTS migration/docs
 - [x] 032.4 Notes CRUD API + free plan limit enforcement
+- [x] 032.5 Pinecone note indexing + semantic search flow
+- [x] 032.6 Upstash sliding-window rate limiting for `/api/*`
+- [x] 032.7 Clerk `user.created` webhook + Resend welcome email
+- [x] 032.8 Premium tags endpoint + pin support + strict 403 for free plan
+- [x] 032.9 Sentry + PostHog event tracking for note lifecycle/search
