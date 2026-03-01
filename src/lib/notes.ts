@@ -58,3 +58,52 @@ export async function countUserNotes(userId: string): Promise<number> {
 
   return count ?? 0;
 }
+
+export async function replaceNoteTags(params: {
+  noteId: string;
+  userId: string;
+  tags: string[];
+}) {
+  const supabase = createSupabaseAdminClient();
+
+  await supabase.from("note_tags").delete().eq("note_id", params.noteId).eq("user_id", params.userId);
+
+  if (params.tags.length === 0) {
+    return;
+  }
+
+  const rows = params.tags.map((tag) => ({
+    note_id: params.noteId,
+    user_id: params.userId,
+    tag,
+  }));
+
+  const { error } = await supabase.from("note_tags").insert(rows);
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function getNoteTagsMap(noteIds: string[]): Promise<Map<string, string[]>> {
+  const map = new Map<string, string[]>();
+
+  if (noteIds.length === 0) {
+    return map;
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase.from("note_tags").select("note_id, tag").in("note_id", noteIds);
+
+  if (error) {
+    throw error;
+  }
+
+  for (const row of data ?? []) {
+    const tags = map.get(row.note_id) ?? [];
+    tags.push(row.tag);
+    map.set(row.note_id, tags);
+  }
+
+  return map;
+}

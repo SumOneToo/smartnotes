@@ -13,11 +13,13 @@ Create a Supabase project and collect:
 Run SQL from:
 
 - `supabase/migrations/20260301141500_pdca032_notes_schema.sql`
+- `supabase/migrations/20260301143000_pdca032_premium_tags_pinning.sql`
 
 This creates:
 
 - `public.users`
-- `public.notes`
+- `public.notes` (with `pinned`)
+- `public.note_tags`
 - RLS policies (own rows only)
 - FTS `search_vector` (`title` + `content`)
 - indexes + `updated_at` trigger
